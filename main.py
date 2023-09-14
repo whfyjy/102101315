@@ -1,0 +1,62 @@
+import re
+import os
+import csv
+import time
+import math
+import json
+import requests
+import numpy as np
+import pandas as pd
+from datetime import datetime
+from bs4 import BeautifulSoup
+from matplotlib import pyplot as plt
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from collections import Counter
+from wordcloud import WordCloud
+import pandas as pd
+cnt = 1
+all_list = []
+bv_id_list = []
+dic_headers = {
+        'Cookie': 'buvid3=65AB2C1C-CA63-423E-8962-D48A509B654D167626infoc; buvid4=B86D73C8-4D34-70BA-E906-2BD5EF4C3D7566095-022012015-8XrJbXuQGMbmUAOjaWFg6g%3D%3D; buvid_fp=96f3bfd68957a4da617a78514b864fe3; CURRENT_BLACKGAP=0; CURRENT_QUALITY=80; fingerprint3=b2701f600ed47766c4dd0664c75d9295; fingerprint=6424293a354c9d43fdfdcc7f18e97e26; _uuid=32611DAA-CB1F-4BB9-B1010B-6983D971389537306infoc; CURRENT_FNVAL=4048; rpdid=|(RYkYml~~Y0J\'uYY))~R)mu; header_theme_version=CLOSE; b_nut=100; bp_video_offset_3493287732185475=0; DedeUserID=3493287732185475; DedeUserID__ckMd5=6a99041503b447a2; SESSDATA=9318974f%2C1710083111%2C5a4ef%2A92CjCaMolw8I7DLqX_nISglDyFKbEcwnhK2JEcO5IogGA4esNltIt7chzVQjsk7YA0ZlsSVkk0MVFtY0E0MVNpdDc1YjdXSXc1amt1ZkpfWl93YkhXZ3RwcjV3WlJDaGJUZXl0eXZ2ZWJWNXNPcmFxUk44cWZtb3liel9qQWRLTEFQUDBJWC1RazF3IIEC; bili_jct=0fcc3ba54992f447509a369fc41ea52b; PVID=1; home_feed_column=4; browser_resolution=853-776; b_lsid=56725243_18A91FBD41C',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36 Edg/116.0.1938.69',
+}
+
+def bivurl(url, n):
+        response = requests.get(url, headers=dic_headers)
+        json_dict = json.loads(response.text)
+        return json_dict["data"]["result"][11]["data"][n]["bvid"]
+
+def get_outer_urls(n):
+        '''
+        【分页网址url采集】
+        n：爬取页数
+        结果：得到分页网页的list
+        '''
+        lst = []
+        for i in range(1, n):
+            ui = f'https://api.bilibili.com/x/web-interface/search/all/v2?page={i}&keyword=日本核污染水排海'
+            lst.append(ui)
+
+        return (lst)
+
+if __name__ == '__main__':
+    urllst = get_outer_urls(15)
+    for url in urllst:
+        for k in range(1,21):
+            print(k)
+            bvid_url = "https://www.bilibili.com/video/" + bivurl(url, k)
+            r=requests.get(url=bvid_url,headers=dic_headers)
+            cid = re.search(r'"cid":(\d*),', r.text).group(1)
+            cid_url = f"https://comment.bilibili.com/{cid}.xml"
+            r2 = requests.get(cid_url,headers=dic_headers)
+            r2.encoding = r2.apparent_encoding
+            dmlst = re.findall('<d p=".*?">(.*?)</d>', r2.text)
+            for index in dmlst:
+                with open('弹幕.txt', mode='a', encoding='utf-8') as f:
+                    f.write(index)
+                    f.write("\n")
+
+
