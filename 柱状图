@@ -1,0 +1,19 @@
+import matplotlib.pyplot as plt
+
+
+with open('弹幕.txt', 'r',encoding='utf-8') as file:
+    lines = file.readlines()
+message_counts = {}
+for line in lines:
+    message = line.strip()  # 去除行尾换行符
+    if message in message_counts:
+        message_counts[message] += 1
+    else:
+        message_counts[message] = 1
+top_messages = sorted(message_counts, key=message_counts.get, reverse=True)[:20]
+import matplotlib.pyplot as plt
+plt.bar(range(len(top_messages)), [message_counts[message] for message in top_messages])
+plt.title("Top 20 Frequent Messages")
+plt.xlabel("Message")
+plt.ylabel("Frequency")
+plt.show()
